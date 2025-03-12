@@ -24,7 +24,7 @@ The folder is organized by **date**, making it easy to follow along with class s
         └── notes.txt
 ```
 
-### Code Demos
+## Code Demos
 
 Each class includes hands-on examples covering:
 - Greedy Modularity Optimization
@@ -43,15 +43,15 @@ Each class includes hands-on examples covering:
 - Graph Visualizations for communities and link predictions
 
 
-### Sample Datasets
+## Sample Datasets
 - Each folder includes sample graph data in JSON format:
   - `networkx_nodes.json`
   - `networkx_edges.json`
 - Use these datasets to test and modify code.
 
 
-### Take-Home Assignment Datasets
-- Located in `/student_homework_datasets/`
+## Take-Home Assignment Datasets
+- Located in `/student_datasets/`
 - Unique datasets generated for each student.
 - Designed to practice community detection and link prediction algorithms.
 
