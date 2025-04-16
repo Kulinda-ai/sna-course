@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>TRON Network Graph</title>
+    <script src="https://unpkg.com/cytoscape/dist/cytoscape.min.js"></script>
+    <style>
+        #cy {
+            width: 100%;
+            height: 100vh;
+            display: block;
+            border: 1px solid #ccc;
+        }
+    </style>
+</head>
+<body>
+
+<div id="cy"></div>
+
+<script>
+    let cy;
+
+    fetch('/data-initial-analysis')
+        .then(response => response.json())
+        .then(graphData => {
+            let nodes = graphData.nodes;
+            let edges = graphData.edges;
+
+            // Create a set of nodes that are actually used in edges
+            const connectedNodeIds = new Set();
+            edges.forEach(edge => {
+                connectedNodeIds.add(edge.data.source);
+                connectedNodeIds.add(edge.data.target);
+            });
+
+            // Filter out unconnected nodes
+            nodes = nodes.filter(n => connectedNodeIds.has(n.data.id));
+
+            // Final elements to pass to Cytoscape
+            const elements = {
+                nodes: nodes,
+                edges: edges
+            };
+
+            cy = cytoscape({
+                container: document.getElementById('cy'),
+                elements: elements,
+
+                style: [
+                    // Fallback for all nodes
+                    {
+                        selector: 'node',
+                        style: {
+                            'background-color': '#666',
+                            'label': 'data(label)',
+                            'width': 40,
+                            'height': 40,
+                            'text-valign': 'center',
+                            'text-halign': 'center',
+                            'color': '#fff',
+                            'font-size': '10px',
+                            'text-outline-color': '#000',
+                            'text-outline-width': '1px'
+                        }
+                    },
+                    // Dynamic sizing if available
+                    {
+                        selector: 'node[total_transaction_count]',
+                        style: {
+                            'width': 'mapData(total_transaction_count, 0, 10000, 20, 100)',
+                            'height': 'mapData(total_transaction_count, 0, 10000, 20, 100)'
+                        }
+                    },
+                    // Edge styles
+                    {
+                        selector: 'edge',
+                        style: {
+                            'width': 'data(width)',
+                            'line-color': 'data(color)',
+                            'target-arrow-color': 'data(color)',
+                            'target-arrow-shape': 'triangle',
+                            'arrow-scale': 0.5,
+                            'curve-style': 'bezier',
+                            'label': 'data(label)',
+                            'color': '#000',
+                            'font-size': '6px',
+                            'text-outline-color': '#fff',
+                            'text-outline-width': '1px',
+                            'text-rotation': 'autorotate'
+                        }
+                    }
+                ],
+
+                layout: {
+                    name: 'cose',
+                    fit: true,
+                    padding: 30,
+                    nodeRepulsion: 800000,
+                    idealEdgeLength: 150,
+                    edgeElasticity: 50,
+                    gravity: 5,
+                    numIter: 30000,
+                    initialTemp: 200,
+                    coolingFactor: 0.95,
+                    minTemp: 1.0
+                }
+            });
+
+            console.log('Cytoscape graph loaded with', cy.nodes().length, 'nodes and', cy.edges().length, 'edges');
+        })
+        .catch(error => {
+            console.error('Failed to load graph data:', error);
+        });
+</script>
+
+</body>
+</html>
