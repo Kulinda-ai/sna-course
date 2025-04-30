@@ -1,4 +1,5 @@
 # FILE: generate_student_networkx_data.py
+# 🔧 Utility for generating synthetic student practice data with community structure
 
 import json
 import random
@@ -8,15 +9,14 @@ import os
 # === CONFIGURATION ===
 NUM_NODES = 100            # Total number of nodes
 NUM_COMMUNITIES = 4        # Number of communities/groups
-INTRA_COMMUNITY_P = 0.3    # Probability of edges inside communities (higher = denser)
-INTER_COMMUNITY_P = 0.01   # Probability of edges between communities (lower = sparser)
+INTRA_COMMUNITY_P = 0.3    # Probability of edges inside communities
+INTER_COMMUNITY_P = 0.01   # Probability of edges between communities
 OUTPUT_FOLDER = "student_data"
 
 LABEL_TYPES = ['node_a', 'node_b', 'node_c', 'node_d', 'node_e',
                'node_f', 'node_g', 'node_h', 'node_i', 'node_j']
 
 def generate_community_sizes(num_nodes, num_communities):
-    """Distribute nodes roughly equally among communities"""
     base_size = num_nodes // num_communities
     sizes = [base_size] * num_communities
     leftover = num_nodes - sum(sizes)
@@ -27,8 +27,6 @@ def generate_community_sizes(num_nodes, num_communities):
 def generate_strong_community_graph(num_nodes, num_communities, intra_p, inter_p):
     sizes = generate_community_sizes(num_nodes, num_communities)
     probs = [[intra_p if i == j else inter_p for j in range(num_communities)] for i in range(num_communities)]
-    
-    # Generate a graph using stochastic block model
     G = nx.stochastic_block_model(sizes, probs, seed=random.randint(1, 10000))
     return G
 
@@ -60,14 +58,10 @@ def generate_strong_community_dataset(student_id, num_nodes=NUM_NODES, num_commu
                                       intra_p=INTRA_COMMUNITY_P, inter_p=INTER_COMMUNITY_P):
     os.makedirs(OUTPUT_FOLDER, exist_ok=True)
 
-    # Generate graph
     G = generate_strong_community_graph(num_nodes, num_communities, intra_p, inter_p)
-
-    # Assign labels and convert edges
     nodes = assign_labels_to_nodes(G)
     edges = convert_edges_to_json(G)
 
-    # File names
     nodes_filename = f"{OUTPUT_FOLDER}/networkx_nodes_{student_id}.json"
     edges_filename = f"{OUTPUT_FOLDER}/networkx_edges_{student_id}.json"
 
@@ -78,6 +72,6 @@ def generate_strong_community_dataset(student_id, num_nodes=NUM_NODES, num_commu
     print(f"Nodes file: {nodes_filename}")
     print(f"Edges file: {edges_filename}")
 
-# === Example: Generate datasets for 5 students ===
+# === Example: Generate datasets for 15 students ===
 for student_id in range(1, 16):
     generate_strong_community_dataset(student_id)
