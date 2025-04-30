@@ -1,3 +1,5 @@
+# FILE: example_influencer_ranking_normalized.py
+
 import json
 import networkx as nx
 import matplotlib.pyplot as plt

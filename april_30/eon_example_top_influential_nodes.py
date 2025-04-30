@@ -1,3 +1,5 @@
+# FILE: eon_example_top_influential_nodes.py
+
 import json
 import networkx as nx
 import EoN

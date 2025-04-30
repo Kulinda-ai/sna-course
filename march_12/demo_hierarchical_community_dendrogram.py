@@ -1,3 +1,5 @@
+# FILE: demo_hierarchical_community_dendrogram.py
+
 import json
 import networkx as nx
 import matplotlib.pyplot as plt

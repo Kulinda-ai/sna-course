@@ -1,3 +1,5 @@
+# FILE: example_degree_connections.py
+
 import networkx as nx
 import json
 import pandas as pd

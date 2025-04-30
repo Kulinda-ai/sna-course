@@ -1,3 +1,5 @@
+# FILE: example_community_types.py
+
 import json
 import networkx as nx
 import matplotlib.pyplot as plt

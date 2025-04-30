@@ -1,3 +1,5 @@
+# FILE: eon_example_low_influence_node.py
+
 import json
 import networkx as nx
 import EoN

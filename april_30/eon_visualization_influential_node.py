@@ -1,3 +1,5 @@
+# FILE: eon_visualization_influential_node.py
+
 import json
 import networkx as nx
 import EoN

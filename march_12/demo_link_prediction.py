@@ -1,3 +1,5 @@
+# FILE: demo_link_prediction.py
+
 import json
 import networkx as nx
 import matplotlib.pyplot as plt

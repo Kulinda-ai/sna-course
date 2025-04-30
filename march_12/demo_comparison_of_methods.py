@@ -1,3 +1,5 @@
+# FILE: demo_comparison_of_methods.py
+
 import json
 import networkx as nx
 import matplotlib.pyplot as plt

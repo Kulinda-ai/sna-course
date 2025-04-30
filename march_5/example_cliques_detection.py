@@ -1,3 +1,5 @@
+# FILE: example_cliques_detection.py
+
 import json
 import networkx as nx
 import matplotlib.pyplot as plt

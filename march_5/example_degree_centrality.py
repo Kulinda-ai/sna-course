@@ -1,3 +1,5 @@
+# FILE: example_degree_centrality.py
+
 import json
 import networkx as nx
 import matplotlib.pyplot as plt

@@ -1,3 +1,5 @@
+# FILE: demo_label_proposition.py
+
 import json
 import networkx as nx
 import matplotlib.pyplot as plt

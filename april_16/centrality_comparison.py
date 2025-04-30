@@ -1,3 +1,5 @@
+# FILE: centrality_comparison.py
+
 import json
 import networkx as nx
 import csv

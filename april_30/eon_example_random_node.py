@@ -1,3 +1,7 @@
+# FILE: eon_example_random_node.py
+
+# 
+
 import json
 import networkx as nx
 import EoN

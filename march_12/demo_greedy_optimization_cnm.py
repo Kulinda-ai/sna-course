@@ -1,3 +1,5 @@
+# FILE: demo_greedy_optimization_cnm.py
+
 import json
 import networkx as nx
 import matplotlib.pyplot as plt

@@ -1,3 +1,5 @@
+# FILE: node_classification.py
+
 import json
 import networkx as nx
 import matplotlib.pyplot as plt
