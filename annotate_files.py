@@ -1,4 +1,5 @@
 # FILE: annotate_files.py
+# 🔧 Utility script for automatically adding file header comments to .py files
 
 import os
 
@@ -8,23 +9,24 @@ def annotate_py_files(root_dir):
             if filename.endswith(".py"):
                 file_path = os.path.join(dirpath, filename)
 
+                # Read file contents
                 with open(file_path, 'r', encoding='utf-8') as f:
                     lines = f.readlines()
 
-                # Check if first line already contains the filename
+                # Skip files already annotated
                 header_comment = f"# FILE: {filename}"
                 if lines and lines[0].strip() == header_comment:
-                    continue  # Already annotated
+                    continue
 
-                # Prepend filename comment and a blank line
+                # Insert filename header and spacing
                 lines = [header_comment + '\n', '\n'] + lines
 
-                # Write back to file
+                # Overwrite file with updated content
                 with open(file_path, 'w', encoding='utf-8') as f:
                     f.writelines(lines)
 
                 print(f"✅ Annotated: {file_path}")
 
-# 🔧 Replace with your project root directory
-project_root = "./"  # Current directory
+# 🔧 Set the root directory where your .py files are located
+project_root = "./"  # Use "." to annotate all Python files in the current folder and subfolders
 annotate_py_files(project_root)

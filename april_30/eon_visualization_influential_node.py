@@ -6,14 +6,20 @@ import EoN
 import matplotlib.pyplot as plt
 from collections import Counter
 
-# === Load Nodes and Edges ===
+# ==============================================================================
+# STEP 1: Load Node and Edge Data
+# ==============================================================================
+
 with open('networkx_nodes.json') as f:
     node_data = json.load(f)
 
 with open('networkx_edges.json') as f:
     edge_data = json.load(f)
 
-# === Create Graph ===
+# ==============================================================================
+# STEP 2: Build Directed Graph
+# ==============================================================================
+
 G = nx.DiGraph()
 for node in node_data:
     G.add_node(str(node['id']), label=node['label'])
@@ -21,21 +27,42 @@ for node in node_data:
 for edge in edge_data:
     G.add_edge(str(edge['source']), str(edge['target']))
 
-# === Parameters ===
-tau = 0.2        # Transmission rate
-gamma = 0.05     # Recovery rate
+# ==============================================================================
+# STEP 3: Set SIR Parameters and Initial Infected Node
+# ==============================================================================
+
+tau = 0.2       # Transmission rate
+gamma = 0.05    # Recovery rate
+
+# Choose an influential node (based on centrality analysis)
 initial_infecteds = ["191"]
 
-# === Run Simulation ===
-sim = EoN.fast_SIR(G, tau=tau, gamma=gamma,
-                   initial_infecteds=initial_infecteds,
-                   return_full_data=True)
+# ==============================================================================
+# STEP 4: Run the SIR Simulation (Full Data Mode)
+# ==============================================================================
 
-# === Layout for Drawing (same for both graphs)
+sim = EoN.fast_SIR(
+    G,
+    tau=tau,
+    gamma=gamma,
+    initial_infecteds=initial_infecteds,
+    return_full_data=True  # allows time-specific status queries
+)
+
+# Layout once for consistency across plots
 pos = nx.spring_layout(G, seed=42)
 
-# === Function to visualize status at a given time ===
+# ==============================================================================
+# STEP 5: Function to Visualize a Snapshot of the Spread
+# ==============================================================================
+
 def visualize_status_at_time(time_label, status_dict):
+    """
+    Draws a snapshot of the network showing which nodes are:
+    - Susceptible (blue)
+    - Infected (orange)
+    - Recovered (green)
+    """
     sus_nodes = [n for n in G.nodes if status_dict.get(n, 'S') == 'S']
     inf_nodes = [n for n in G.nodes if status_dict.get(n, 'S') == 'I']
     rec_nodes = [n for n in G.nodes if status_dict.get(n, 'S') == 'R']
@@ -56,18 +83,25 @@ def visualize_status_at_time(time_label, status_dict):
     plt.tight_layout()
     plt.show()
 
-# === Visualize at Midpoint ===
+# ==============================================================================
+# STEP 6: Visualize Midpoint and Final State
+# ==============================================================================
+
+# Midpoint visualization
 mid_idx = round(len(sim.t()) / 2)
 mid_time = sim.t()[mid_idx]
 mid_status = sim.get_statuses(time=mid_time)
 visualize_status_at_time(f"Midpoint (t = {mid_time:.2f})", mid_status)
 
-# === Visualize at Final State ===
+# Final state visualization
 final_time = sim.t()[-1]
 final_status = sim.get_statuses(time=final_time)
 visualize_status_at_time(f"Final State (t = {final_time:.2f})", final_status)
 
-# === Summary Info ===
+# ==============================================================================
+# STEP 7: Print Simulation Summary
+# ==============================================================================
+
 print("\n=== SIMULATION SUMMARY ===")
 print(f"Initial infected node(s): {initial_infecteds}")
 print(f"Total nodes in graph: {G.number_of_nodes()}")

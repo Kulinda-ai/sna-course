@@ -5,7 +5,10 @@ import networkx as nx
 import EoN
 import matplotlib.pyplot as plt
 
-# === Load Nodes and Edges ===
+# ==============================================================================
+# STEP 1: Load Graph Data
+# ==============================================================================
+
 print("Loading nodes and edges...")
 with open('networkx_nodes.json') as f:
     node_data = json.load(f)
@@ -13,46 +16,63 @@ with open('networkx_nodes.json') as f:
 with open('networkx_edges.json') as f:
     edge_data = json.load(f)
 
-# === Create a Directed Graph ===
+# ==============================================================================
+# STEP 2: Build Directed Graph
+# ==============================================================================
+
 G = nx.DiGraph()
 print("Creating graph...")
 
+# Add nodes
 for node in node_data:
     G.add_node(str(node['id']), label=node.get('label', ''))
 
+# Add directed edges
 for edge in edge_data:
     G.add_edge(str(edge['source']), str(edge['target']))
 
 print(f"Total nodes: {G.number_of_nodes()}, Total edges: {G.number_of_edges()}")
 
-# === Calculate Eigenvector Centrality ===
+# ==============================================================================
+# STEP 3: Identify Influential Nodes Using Eigenvector Centrality
+# ==============================================================================
+
 print("Calculating eigenvector centrality...")
 try:
+    # For directed graphs this may fail, so fallback to undirected version
     centrality = nx.eigenvector_centrality_numpy(G)
 except:
-    centrality = nx.eigenvector_centrality_numpy(G.to_undirected())  # fallback if directed fails
+    centrality = nx.eigenvector_centrality_numpy(G.to_undirected())
 
-# === Get Top 5 Nodes ===
+# Sort by influence and get top 5 most influential nodes
 top_nodes = sorted(centrality.items(), key=lambda x: x[1], reverse=True)[:5]
 initial_infecteds = [node for node, _ in top_nodes]
 print(f"Top 5 influential nodes by eigenvector centrality: {initial_infecteds}")
 
-# === Define SIR Parameters ===
-tau = 0.2
-gamma = 0.05
+# ==============================================================================
+# STEP 4: Define and Run SIR Model from Top Influencers
+# ==============================================================================
+
+tau = 0.2    # Infection rate
+gamma = 0.05 # Recovery rate
 print(f"Running SIR simulation with tau={tau}, gamma={gamma}...")
 
-# === Run Simulation ===
 t, S, I, R = EoN.fast_SIR(G, tau=tau, gamma=gamma, initial_infecteds=initial_infecteds)
 
-# === Output Final Stats ===
+# ==============================================================================
+# STEP 5: Print Simulation Summary
+# ==============================================================================
+
 print("Simulation finished.")
 print(f"  Final susceptible: {S[-1]}")
 print(f"  Final infected: {I[-1]}")
 print(f"  Final recovered: {R[-1]}")
 print(f"  Total simulation time: {t[-1]:.2f}")
 
-# === Plot the Results ===
+# ==============================================================================
+# STEP 6: Plot Time Series Results
+# ==============================================================================
+
 plt.figure(figsize=(10, 6))
 plt.plot(t, S, label="Susceptible", color='blue')
 plt.plot(t, I, label="Infected", color='orange')

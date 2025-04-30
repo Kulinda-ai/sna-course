@@ -53,30 +53,6 @@ This loads `initial_analysis.json` into Cytoscape.js and renders a force-directe
 
 ---
 
-## 🔁 4. Weighted vs. Unweighted Centrality Comparison (`centrality_comparison.py`)
-
-This script compares how node importance changes when weights (i.e., transaction values) are taken into account.
-
-### What it does:
-- Loads the original `networkx.json`
-- Builds two versions of the graph:
-  - **Unweighted**: All edges treated equally
-  - **Weighted**: Edge weight = `value`
-- Filters out all "dust" transactions in both
-- Removes nodes with no transactions
-- Computes:
-  - `pagerank_unweighted` and `pagerank_weighted`
-  - `betweenness_unweighted` and `betweenness_weighted`
-- Joins results into a single CSV:
-
-```
-centrality_comparison.csv
-```
-
-This lets you compare how each wallet ranks differently under volume-based vs. structure-only metrics.
-
----
-
 ## 📁 File Overview
 
 ```
@@ -87,8 +63,6 @@ This lets you compare how each wallet ranks differently under volume-based vs. s
 ├── initial_analysis.json       # Output of initial analysis
 ├── templates/
 │   └── initial-analysis.html # Cytoscape HTML visualization
-├── centrality_comparison.py  # Weighted/unweighted comparison script
-├── centrality_comparison.csv # Final CSV comparison output
 ```
 
 ---
@@ -102,9 +76,6 @@ python initial_analysis.py
 # Step 2: Run Flask to visualize it
 python app.py
 # Visit http://localhost:5000/initial-analysis
-
-# Step 3: Run weighted/unweighted centrality comparison
-python centrality_comparison.py
 ```
 
 ---

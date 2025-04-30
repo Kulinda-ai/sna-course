@@ -5,7 +5,10 @@ import networkx as nx
 import EoN
 import matplotlib.pyplot as plt
 
-# === Load Nodes and Edges ===
+# ==============================================================================
+# STEP 1: Load Graph Data
+# ==============================================================================
+
 print("Loading nodes and edges...")
 
 with open('networkx_nodes.json') as f:
@@ -14,45 +17,70 @@ with open('networkx_nodes.json') as f:
 with open('networkx_edges.json') as f:
     edge_data = json.load(f)
 
-# === Create a Directed Graph ===
-G = nx.DiGraph()
-print(f"Creating graph...")
+# ==============================================================================
+# STEP 2: Create Directed NetworkX Graph
+# ==============================================================================
 
-# Add nodes (use string IDs to match edge references)
+G = nx.DiGraph()
+print("Creating graph...")
+
+# Add nodes (ensure string IDs to match edges)
 for node in node_data:
     node_id = str(node['id'])
     G.add_node(node_id, label=node.get('label', ''))
+
 print(f"Total nodes added: {G.number_of_nodes()}")
 
-# Add edges (string IDs to match node IDs)
+# Add directed edges
 for edge in edge_data:
     source = str(edge['source'])
     target = str(edge['target'])
     G.add_edge(source, target)
+
 print(f"Total edges added: {G.number_of_edges()}")
 
-# === Define SIR Model Parameters ===
-tau = 0.2    # Transmission rate
-gamma = 0.05 # Recovery rate
+# ==============================================================================
+# STEP 3: Define SIR Parameters
+# ==============================================================================
+
+tau = 0.2    # Transmission rate (probability of infecting neighbor per unit time)
+gamma = 0.05 # Recovery rate (probability of recovering per unit time)
 print(f"Model parameters set: tau = {tau}, gamma = {gamma}")
 
-# === Choose Initial Infected Node(s) ===
-# Use a known influential node (e.g., high eigenvector and degree)
+# ==============================================================================
+# STEP 4: Select Initial Node(s) for Infection
+# ==============================================================================
+
+# Node 191 is selected for being highly influential (from prior centrality analysis)
 initial_infecteds = ["191"]
 print(f"Initial infected node(s): {initial_infecteds}")
 
-# === Run the SIR Simulation ===
-print("Running SIR simulation using EoN...")
-t, S, I, R = EoN.fast_SIR(G, tau=tau, gamma=gamma, initial_infecteds=initial_infecteds)
+# ==============================================================================
+# STEP 5: Run the SIR Simulation
+# ==============================================================================
 
-# === Display Final Results ===
-print(f"Simulation finished. Final statistics:")
+print("Running SIR simulation using EoN...")
+t, S, I, R = EoN.fast_SIR(
+    G,
+    tau=tau,
+    gamma=gamma,
+    initial_infecteds=initial_infecteds
+)
+
+# ==============================================================================
+# STEP 6: Display Final Statistics
+# ==============================================================================
+
+print("Simulation finished. Final statistics:")
 print(f"  Final susceptible: {S[-1]}")
 print(f"  Final infected: {I[-1]}")
 print(f"  Final recovered: {R[-1]}")
 print(f"  Total simulation time: {t[-1]:.2f}")
 
-# === Plot the Results ===
+# ==============================================================================
+# STEP 7: Plot Time Series of the Epidemic
+# ==============================================================================
+
 print("Plotting the SIR spread over time...")
 plt.figure(figsize=(10, 6))
 plt.plot(t, S, label="Susceptible", color='blue')
