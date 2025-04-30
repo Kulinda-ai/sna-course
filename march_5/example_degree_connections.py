@@ -4,75 +4,92 @@ import networkx as nx
 import json
 import pandas as pd
 
+# ==============================================================================
+# STEP 1: Find 1st, 2nd, and 3rd Degree Connections for Every Node
+# ==============================================================================
+
 def find_connections_by_degree(G):
+    """
+    For each node in the graph, find:
+    - 1st-degree connections: directly connected neighbors
+    - 2nd-degree: neighbors of neighbors
+    - 3rd-degree: neighbors of 2nd-degree nodes (excluding previous)
+    """
     connections_by_degree = {}
-    
+
     for node in G.nodes():
-        # Initialize dictionaries for each node
+        # Initialize entry for this node
         connections_by_degree[node] = {'1st': [], '2nd': [], '3rd': []}
-        
-        # 1st degree connections
+
+        # 1st-degree neighbors (direct connections)
         first_degree = set(G.neighbors(node))
         connections_by_degree[node]['1st'] = list(first_degree)
-        
-        # 2nd degree connections
+
+        # 2nd-degree neighbors
         second_degree = set()
         for neighbor in first_degree:
             second_degree.update(G.neighbors(neighbor))
-        # Remove the original node and already counted 1st degree connections
+
+        # Remove original node and any 1st-degree nodes to isolate 2nd-degree
         second_degree = second_degree - first_degree - {node}
         connections_by_degree[node]['2nd'] = list(second_degree)
-        
-        # 3rd degree connections
+
+        # 3rd-degree neighbors
         third_degree = set()
         for neighbor in second_degree:
             third_degree.update(G.neighbors(neighbor))
-        # Remove nodes already counted in 1st and 2nd degree connections, and the original node
+
+        # Again, remove overlap with 1st/2nd-degree and self
         third_degree = third_degree - first_degree - second_degree - {node}
         connections_by_degree[node]['3rd'] = list(third_degree)
-    
+
     return connections_by_degree
-    
+
+# ==============================================================================
+# STEP 2: Convert Output to JSON Format for Export or Inspection
+# ==============================================================================
+
 def connections_to_json(G):
     connections_by_degree = find_connections_by_degree(G)
-    # Convert the connections data to a JSON string
-    json_data = json.dumps(connections_by_degree, indent=4)
-    return json_data
+    return json.dumps(connections_by_degree, indent=4)
 
-# Example usage
+# ==============================================================================
+# STEP 3: Load Graph from JSON Files
+# ==============================================================================
+
 def create_graph_from_json(nodes_file_path, edges_file_path):
-    # Load nodes
+    # Load node and edge lists
     with open(nodes_file_path, 'r') as file:
         nodes_data = json.load(file)
-    
-    # Load edges
+
     with open(edges_file_path, 'r') as file:
         edges_data = json.load(file)
-    
-    # Create a new graph
+
+    # Create undirected graph (bi-directional relationships assumed)
     G = nx.Graph()
-    
-    # Add nodes to the graph
+
+    # Add nodes with optional labels
     for node in nodes_data:
         G.add_node(node['id'], label=node.get('label', ''))
-    
-    # Add edges to the graph
+
+    # Add edges
     for edge in edges_data:
         G.add_edge(edge['source'], edge['target'])
-    
+
     return G
 
-# Replace 'networkx_nodes.json' and 'networkx_edges.json' with the actual paths to your files
+# ==============================================================================
+# STEP 4: Load Data, Build Graph, Compute Connection Layers
+# ==============================================================================
+
 nodes_file_path = 'networkx_nodes.json'
 edges_file_path = 'networkx_edges.json'
-
-# Create the graph
 G = create_graph_from_json(nodes_file_path, edges_file_path)
 
+# Compute connection degrees and print
 json_data = connections_to_json(G)
 print(json_data)
 
-# Optionally, write the JSON data to a file
+# Save the results to a file for further use
 with open('network_connections_by_degree.json', 'w') as f:
     json.dump(json.loads(json_data), f, indent=4)
-

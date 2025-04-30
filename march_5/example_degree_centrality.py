@@ -5,55 +5,68 @@ import networkx as nx
 import matplotlib.pyplot as plt
 import pandas as pd
 
-# Create an empty graph
-G = nx.Graph()
+# ==============================================================================
+# STEP 1: Load graph from JSON files and build a NetworkX graph
+# ==============================================================================
 
-# Add nodes
 def create_graph_from_json(nodes_file_path, edges_file_path):
     # Load nodes
     with open(nodes_file_path, 'r') as file:
         nodes_data = json.load(file)
-    
+
     # Load edges
     with open(edges_file_path, 'r') as file:
         edges_data = json.load(file)
-    
-    # Create a new graph
-    G = nx.Graph()
-    
-    # Add nodes to the graph
+
+    G = nx.Graph()  # Use undirected graph for general degree analysis
+
+    # Add nodes with optional labels
     for node in nodes_data:
         G.add_node(node['id'], label=node.get('label', ''))
-    
-    # Add edges to the graph
+
+    # Add edges (assumes each edge connects a source and target node)
     for edge in edges_data:
         G.add_edge(edge['source'], edge['target'])
-    
+
     return G
 
-# Replace 'networkx_nodes.json' and 'networkx_edges.json' with the actual paths to your files
+# File paths (adjust if needed)
 nodes_file_path = 'networkx_nodes.json'
 edges_file_path = 'networkx_edges.json'
 
-# Create the graph
+# Build the graph object
 G = create_graph_from_json(nodes_file_path, edges_file_path)
 
-# Calculate degree centrality
+# ==============================================================================
+# STEP 2: Calculate Degree Centrality
+# ==============================================================================
+
+# Degree centrality measures how many direct connections (edges) each node has.
+# It’s normalized by default: max score = 1 if the node is connected to all others.
 degree_centrality = nx.degree_centrality(G)
 
-# Print degree centrality of each node
+# Print each node's score to the console
+print("\n=== Degree Centrality Scores ===")
 for node, centrality in degree_centrality.items():
-    print(f"{node}: {centrality}")
+    print(f"{node}: {centrality:.4f}")
 
-# Convert to DataFrame and Rank
+# ==============================================================================
+# STEP 3: Rank Nodes by Degree Centrality
+# ==============================================================================
+
+# Convert the centrality dictionary into a ranked DataFrame
 df = pd.DataFrame(list(degree_centrality.items()), columns=['Node', 'Degree Centrality'])
 df = df.sort_values(by='Degree Centrality', ascending=False).reset_index(drop=True)
-df.index += 1  # Set ranking to start from 1
+df.index += 1  # Set index to start from 1 for ranking
 
-# Print DataFrame
+# Print the table to console
+print("\n=== Ranked Nodes by Degree Centrality ===")
 print(df)
 
-# Save to JSON file
-df.to_json("degree_centrality.json", orient="records", indent=4)
+# ==============================================================================
+# STEP 4: Export Results
+# ==============================================================================
 
-print("\nSaved degree centrality rankings to 'degree_centrality.json'.")
+# Save results to JSON file (one object per node)
+df.to_json("degree_centrality.json", orient="records", indent=4)
+print("\n✅ Saved degree centrality rankings to 'degree_centrality.json'.")

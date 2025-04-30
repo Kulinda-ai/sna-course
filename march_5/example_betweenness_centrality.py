@@ -5,51 +5,74 @@ import networkx as nx
 import matplotlib.pyplot as plt
 import pandas as pd
 
+# ------------------------------------------------------------------------------
+# STEP 1: Load nodes and edges from JSON and build an undirected graph
+# ------------------------------------------------------------------------------
+
 def create_graph_from_json(nodes_file_path, edges_file_path):
-    # Load nodes
     with open(nodes_file_path, 'r') as file:
         nodes_data = json.load(file)
     
-    # Load edges
     with open(edges_file_path, 'r') as file:
         edges_data = json.load(file)
     
-    # Create a new graph
-    G = nx.Graph()
+    G = nx.Graph()  # We use an undirected graph for general centrality analysis
     
-    # Add nodes to the graph
     for node in nodes_data:
-        G.add_node(node['id'], label=node.get('label', ''))
+        G.add_node(node['id'], label=node.get('label', ''))  # Optionally preserve labels
     
-    # Add edges to the graph
     for edge in edges_data:
-        G.add_edge(edge['source'], edge['target'])
-    
+        G.add_edge(edge['source'], edge['target'])  # Assumes edges are unweighted
+
     return G
 
-# Replace 'networkx_nodes.json' and 'networkx_edges.json' with the actual paths to your files
+# Provide file paths to your networkx-style node and edge files
 nodes_file_path = 'networkx_nodes.json'
 edges_file_path = 'networkx_edges.json'
 
-# Create the graph
+# Build the graph
 G = create_graph_from_json(nodes_file_path, edges_file_path)
 
-# Calculate betweenness centrality
-betweenness_centrality = nx.betweenness_centrality(G)
+# ------------------------------------------------------------------------------
+# STEP 2: Compute Betweenness Centrality
+# ------------------------------------------------------------------------------
 
-# Print betweenness centrality of each node
+# Betweenness centrality measures how often a node lies on shortest paths between other nodes.
+# High betweenness = the node is a bridge or bottleneck in the network.
+# NetworkX computes this using Brandes' algorithm (efficient for large graphs).
+betweenness_centrality = nx.betweenness_centrality(G, normalized=True)
+
+# ------------------------------------------------------------------------------
+# STEP 3: Print betweenness scores to the console
+# ------------------------------------------------------------------------------
+
+print("\n=== Betweenness Centrality (Raw Scores) ===")
 for node, centrality in betweenness_centrality.items():
-    print(f"{node}: {centrality}")
+    print(f"{node}: {centrality:.4f}")
 
-# Convert to DataFrame and Rank
-df = pd.DataFrame(list(betweenness_centrality.items()), columns=['Node', 'Betweenness Centrality'])
+# ------------------------------------------------------------------------------
+# STEP 4: Convert results to a ranked pandas DataFrame
+# ------------------------------------------------------------------------------
+
+df = pd.DataFrame(
+    list(betweenness_centrality.items()),
+    columns=['Node', 'Betweenness Centrality']
+)
+
+# Rank nodes by their betweenness score (descending)
 df = df.sort_values(by='Betweenness Centrality', ascending=False).reset_index(drop=True)
-df.index += 1  # Set ranking to start from 1
+df.index += 1  # Start ranking at 1 (more intuitive)
 
-# Print DataFrame
+# ------------------------------------------------------------------------------
+# STEP 5: Display the ranked centrality table
+# ------------------------------------------------------------------------------
+
+print("\n=== Ranked Nodes by Betweenness Centrality ===")
 print(df)
 
-# Save to JSON file
-df.to_json("betweenness_centrality.json", orient="records", indent=4)
+# ------------------------------------------------------------------------------
+# STEP 6: Save centrality rankings to a JSON file
+# ------------------------------------------------------------------------------
 
-print("\nSaved betweenness centrality rankings to 'betweenness_centrality.json'.")
+df.to_json("betweenness_centrality.json", orient="records", indent=4)
+print("\n✅ Saved betweenness centrality rankings to 'betweenness_centrality.json'.")

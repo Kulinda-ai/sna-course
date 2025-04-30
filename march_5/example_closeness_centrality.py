@@ -5,51 +5,72 @@ import networkx as nx
 import matplotlib.pyplot as plt
 import pandas as pd
 
+# ==============================================================================
+# STEP 1: Load Graph from JSON Files
+# ==============================================================================
+
 def create_graph_from_json(nodes_file_path, edges_file_path):
-    # Load nodes
+    # Load node list
     with open(nodes_file_path, 'r') as file:
         nodes_data = json.load(file)
     
-    # Load edges
+    # Load edge list
     with open(edges_file_path, 'r') as file:
         edges_data = json.load(file)
     
-    # Create a new graph
-    G = nx.Graph()
-    
-    # Add nodes to the graph
+    G = nx.Graph()  # Use an undirected graph for centrality analysis
+
+    # Add nodes to graph with optional labels
     for node in nodes_data:
         G.add_node(node['id'], label=node.get('label', ''))
     
-    # Add edges to the graph
+    # Add edges between nodes
     for edge in edges_data:
         G.add_edge(edge['source'], edge['target'])
     
     return G
 
-# Replace 'networkx_nodes.json' and 'networkx_edges.json' with the actual paths to your files
+# File paths (adjust if needed)
 nodes_file_path = 'networkx_nodes.json'
 edges_file_path = 'networkx_edges.json'
 
-# Create the graph
+# Create graph object
 G = create_graph_from_json(nodes_file_path, edges_file_path)
 
-# Calculate closeness centrality
+# ==============================================================================
+# STEP 2: Calculate Closeness Centrality
+# ==============================================================================
+
+# Closeness centrality measures how close a node is to all others in the network.
+# Nodes with high closeness can quickly interact or reach many other nodes.
+# It is computed as the reciprocal of the average shortest path length from the node to all others.
 closeness_centrality = nx.closeness_centrality(G)
 
-# Print closeness centrality of each node
+# Print raw scores to console
+print("\n=== Closeness Centrality Scores ===")
 for node, centrality in closeness_centrality.items():
-    print(f"{node}: {centrality}")
+    print(f"{node}: {centrality:.4f}")
 
-# Convert to DataFrame and Rank
-df = pd.DataFrame(list(closeness_centrality.items()), columns=['Node', 'Closeness Centrality'])
+# ==============================================================================
+# STEP 3: Convert Results to DataFrame for Ranking
+# ==============================================================================
+
+df = pd.DataFrame(
+    list(closeness_centrality.items()),
+    columns=['Node', 'Closeness Centrality']
+)
+
+# Sort from highest to lowest (most central = rank 1)
 df = df.sort_values(by='Closeness Centrality', ascending=False).reset_index(drop=True)
-df.index += 1  # Set ranking to start from 1
+df.index += 1  # Start ranking from 1
 
-# Print DataFrame
+# Print ranked table
+print("\n=== Ranked Nodes by Closeness Centrality ===")
 print(df)
 
-# Save to JSON file
-df.to_json("closeness_centrality.json", orient="records", indent=4)
+# ==============================================================================
+# STEP 4: Export Results to JSON File
+# ==============================================================================
 
-print("\nSaved closeness centrality rankings to 'closeness_centrality.json'.")
+df.to_json("closeness_centrality.json", orient="records", indent=4)
+print("\n✅ Saved closeness centrality rankings to 'closeness_centrality.json'.")

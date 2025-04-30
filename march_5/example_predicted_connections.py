@@ -3,67 +3,85 @@
 import json
 import networkx as nx
 import matplotlib.pyplot as plt
-import community as community_louvain
+import community as community_louvain  # not used in this script but often used for community detection
 import pandas as pd
 
-# Create an empty graph
-G = nx.Graph()
+# ==============================================================================
+# STEP 1: Load Graph from JSON Files
+# ==============================================================================
 
 def create_graph_from_json(nodes_file_path, edges_file_path):
-    # Load nodes
+    """
+    Loads a graph from node and edge JSON files. Each node has an ID and optional label.
+    The graph is created as undirected for simplicity in link prediction.
+    """
     with open(nodes_file_path, 'r') as file:
         nodes_data = json.load(file)
     
-    # Load edges
     with open(edges_file_path, 'r') as file:
         edges_data = json.load(file)
     
-    # Create a new graph
     G = nx.Graph()
-    
-    # Add nodes to the graph
+
     for node in nodes_data:
         G.add_node(node['id'], label=node.get('label', ''))
-    
-    # Add edges to the graph
+
     for edge in edges_data:
         G.add_edge(edge['source'], edge['target'])
-    
+
     return G
 
-# Replace 'networkx_nodes.json' and 'networkx_edges.json' with the actual paths to your files
+# Set file paths
 nodes_file_path = 'networkx_nodes.json'
 edges_file_path = 'networkx_edges.json'
 
-# Create the graph
+# Build the graph
 G = create_graph_from_json(nodes_file_path, edges_file_path)
 
+# ==============================================================================
+# STEP 2: Predict Possible Connections Based on Shared Neighbors
+# ==============================================================================
+
 def predict_connections_for_cliques(graph):
+    """
+    Predict potential connections using clique-based logic.
+    If two nodes share 2 or more neighbors, they are likely to form a 3-node clique (triangle).
+    This is a simplified heuristic for link prediction.
+    """
     predictions = []
+
     for node in graph.nodes():
         neighbors = set(nx.neighbors(graph, node))
+
+        # Compare to all non-neighbors (excluding itself)
         for non_neighbor in set(graph.nodes()) - neighbors - {node}:
             common_neighbors = set(nx.common_neighbors(graph, node, non_neighbor))
-            # We only consider pairs with at least two common neighbors to form a potential 3-node clique
+
+            # Only predict if there are at least 2 shared neighbors (potential triangle)
             if len(common_neighbors) >= 2:
                 prediction = {
                     "node": node,
                     "connected_node": non_neighbor,
-                    'common_neighbors_count': len(common_neighbors),
+                    "common_neighbors_count": len(common_neighbors),
                     "common_neighbors": list(common_neighbors)
                 }
                 predictions.append(prediction)
+
     return predictions
 
-# Use the updated function
+# Run the prediction function
 potential_connections_for_cliques = predict_connections_for_cliques(G)
 
-# Convert to JSON string
+# ==============================================================================
+# STEP 3: Output Predicted Connections
+# ==============================================================================
+
+# Convert to formatted JSON for viewing/saving
 connections_for_cliques_json = json.dumps(potential_connections_for_cliques, indent=4)
 
-# Optionally, save to a file
+# Save to file
 with open('predicted_current_connections.json', 'w') as file:
     file.write(connections_for_cliques_json)
 
-# Print part of the JSON string for demonstration
+# Print sample to console
 print(connections_for_cliques_json[:500])
